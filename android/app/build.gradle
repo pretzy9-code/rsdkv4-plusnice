@@ -7,7 +7,17 @@ else {
     apply plugin: 'com.android.library'
 }
 
-def autobuildFlag = false
+// Build flags that can be passed to CMake with -P<FLAG>=<ON|OFF> on the gradle command line
+def forwardedFlags = [
+    "RETRO_DISABLE_PLUS",
+    "RETRO_ACCEPT_OLD_SYNTAX",
+    "RETRO_UPDATE_CHECKER",
+    "RETRO_USE_CURL",
+    "RETRO_VANILLA_LIKE",
+    "RETRO_FORCE_CASE_INSENSITIVE",
+    "RETRO_MOD_LOADER",
+    "RETRO_NETWORKING"
+]
 
 android {
     ndkVersion "22.1.7171670"
@@ -20,11 +30,14 @@ android {
         targetSdkVersion 29
         versionCode 1
         versionName "1.3.3"
-        if(project.hasProperty("RETRO_DISABLE_PLUS"))
-            autobuildFlag = true
+        def cmakeArgs = ["-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android"]
+        forwardedFlags.each { flag ->
+            if (project.hasProperty(flag))
+                cmakeArgs << "-D${flag}=${project.property(flag)}".toString()
+        }
         externalNativeBuild {
             cmake {
-                arguments "-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android", "-DRETRO_DISABLE_PLUS=$autobuildFlag"
+                arguments(*cmakeArgs)
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
