@@ -139,7 +139,7 @@ jobs:
       - name: Build RSDKv4 Android
         working-directory: ./android
         run: |
-          ./gradlew.bat assembleDebug --no-daemon -PABIFILTERS="armeabi-v7a;arm64-v8a" -PCMAKE_BUILD_TYPE=Release -PRETRO_ACCEPT_OLD_SYNTAX=ON -PRETRO_UPDATE_CHECKER=ON -PRETRO_USE_CURL=ON
+          ./gradlew.bat assembleDebug --no-daemon -PABIFILTERS="armeabi-v7a;arm64-v8a" -PRETRO_ACCEPT_OLD_SYNTAX=ON -PRETRO_UPDATE_CHECKER=ON -PRETRO_USE_CURL=ON
       - name: Upload artifact Android
         uses: actions/upload-artifact@v4
         with:
