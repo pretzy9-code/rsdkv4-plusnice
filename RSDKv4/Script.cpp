@@ -26,6 +26,23 @@ unsigned int playtimeSeconds = 0;
 #endif
 
 #define SCRIPT_VAR_COUNT (COMMON_SCRIPT_VAR_COUNT + 0x1DF)
+// Returns a blank frame when a script asks for a sprite frame outside of its own frame list.
+// Previously this read frames belonging to other objects (or garbage), which showed up as sprites randomly popping up.
+SpriteFrame *GetScriptFrame(ObjectScript *info, int frame)
+{
+    static SpriteFrame emptyFrame;
+    if (frame < 0 || frame >= info->frameCount || info->frameListOffset + frame >= SPRITEFRAME_COUNT) {
+        static int warnCount = 0;
+        if (warnCount < 64) { // don't flood the log
+            PrintLog("WARNING: Object script requested sprite frame %d, but it only has %d frame(s)", frame, info->frameCount);
+            ++warnCount;
+        }
+        memset(&emptyFrame, 0, sizeof(emptyFrame));
+        return &emptyFrame;
+    }
+    return &scriptFrames[info->frameListOffset + frame];
+}
+
 int lineID = 0;
 
 int end = 0;
@@ -297,36 +314,6 @@ const char variableNames[][0x20] = {
     "keyPress.start",
     "keyPress.select",
 
-#if RETRO_ACCEPT_OLD_SYNTAX
-    "inputDown.up",
-    "inputDown.down",
-    "inputDown.left",
-    "inputDown.right",
-    "inputDown.buttonA",
-    "inputDown.buttonB",
-    "inputDown.buttonC",
-    "inputDown.buttonX",
-    "inputDown.buttonY",
-    "inputDown.buttonZ",
-    "inputDown.buttonL",
-    "inputDown.buttonR",
-    "inputDown.start",
-    "inputDown.select",
-    "inputPress.up",
-    "inputPress.down",
-    "inputPress.left",
-    "inputPress.right",
-    "inputPress.buttonA",
-    "inputPress.buttonB",
-    "inputPress.buttonC",
-    "inputPress.buttonX",
-    "inputPress.buttonY",
-    "inputPress.buttonZ",
-    "inputPress.buttonL",
-    "inputPress.buttonR",
-    "inputPress.start",
-    "inputPress.select",
-#endif
     // Menu Properties
     "menu1.selection",
     "menu2.selection",
@@ -518,7 +505,39 @@ const char variableNames[][0x20] = {
     "engine.usernameLength",
 
     // DLC checking
-    "game.DLCOverride"
+    "game.DLCOverride",
+
+    // Old syntax variables: kept at the END so original variable IDs (and precompiled bytecode) stay valid
+#if RETRO_ACCEPT_OLD_SYNTAX
+    "inputDown.up",
+    "inputDown.down",
+    "inputDown.left",
+    "inputDown.right",
+    "inputDown.buttonA",
+    "inputDown.buttonB",
+    "inputDown.buttonC",
+    "inputDown.buttonX",
+    "inputDown.buttonY",
+    "inputDown.buttonZ",
+    "inputDown.buttonL",
+    "inputDown.buttonR",
+    "inputDown.start",
+    "inputDown.select",
+    "inputPress.up",
+    "inputPress.down",
+    "inputPress.left",
+    "inputPress.right",
+    "inputPress.buttonA",
+    "inputPress.buttonB",
+    "inputPress.buttonC",
+    "inputPress.buttonX",
+    "inputPress.buttonY",
+    "inputPress.buttonZ",
+    "inputPress.buttonL",
+    "inputPress.buttonR",
+    "inputPress.start",
+    "inputPress.select",
+#endif
 };
 #endif
 
@@ -1230,36 +1249,6 @@ enum ScrVar {
     VAR_KEYPRESSBUTTONR,
     VAR_KEYPRESSSTART,
     VAR_KEYPRESSSELECT,
-#if RETRO_ACCEPT_OLD_SYNTAX
-    VAR_INPUTDOWNUP,
-    VAR_INPUTDOWNDOWN,
-    VAR_INPUTDOWNLEFT,
-    VAR_INPUTDOWNRIGHT,
-    VAR_INPUTDOWNBUTTONA,
-    VAR_INPUTDOWNBUTTONB,
-    VAR_INPUTDOWNBUTTONC,
-    VAR_INPUTDOWNBUTTONX,
-    VAR_INPUTDOWNBUTTONY,
-    VAR_INPUTDOWNBUTTONZ,
-    VAR_INPUTDOWNBUTTONL,
-    VAR_INPUTDOWNBUTTONR,
-    VAR_INPUTDOWNSTART,
-    VAR_INPUTDOWNSELECT,
-    VAR_INPUTPRESSUP,
-    VAR_INPUTPRESSDOWN,
-    VAR_INPUTPRESSLEFT,
-    VAR_INPUTPRESSRIGHT,
-    VAR_INPUTPRESSBUTTONA,
-    VAR_INPUTPRESSBUTTONB,
-    VAR_INPUTPRESSBUTTONC,
-    VAR_INPUTPRESSBUTTONX,
-    VAR_INPUTPRESSBUTTONY,
-    VAR_INPUTPRESSBUTTONZ,
-    VAR_INPUTPRESSBUTTONL,
-    VAR_INPUTPRESSBUTTONR,
-    VAR_INPUTPRESSSTART,
-    VAR_INPUTPRESSSELECT,
-#endif
     VAR_MENU1SELECTION,
     VAR_MENU2SELECTION,
     VAR_TILELAYERXSIZE,
@@ -1442,6 +1431,38 @@ enum ScrVar {
 
     // DLC checking
     VAR_GAME_DLC_OVERRIDE,
+
+    // Old syntax variables: kept at the END so original variable IDs (and precompiled bytecode) stay valid
+#if RETRO_ACCEPT_OLD_SYNTAX
+    VAR_INPUTDOWNUP,
+    VAR_INPUTDOWNDOWN,
+    VAR_INPUTDOWNLEFT,
+    VAR_INPUTDOWNRIGHT,
+    VAR_INPUTDOWNBUTTONA,
+    VAR_INPUTDOWNBUTTONB,
+    VAR_INPUTDOWNBUTTONC,
+    VAR_INPUTDOWNBUTTONX,
+    VAR_INPUTDOWNBUTTONY,
+    VAR_INPUTDOWNBUTTONZ,
+    VAR_INPUTDOWNBUTTONL,
+    VAR_INPUTDOWNBUTTONR,
+    VAR_INPUTDOWNSTART,
+    VAR_INPUTDOWNSELECT,
+    VAR_INPUTPRESSUP,
+    VAR_INPUTPRESSDOWN,
+    VAR_INPUTPRESSLEFT,
+    VAR_INPUTPRESSRIGHT,
+    VAR_INPUTPRESSBUTTONA,
+    VAR_INPUTPRESSBUTTONB,
+    VAR_INPUTPRESSBUTTONC,
+    VAR_INPUTPRESSBUTTONX,
+    VAR_INPUTPRESSBUTTONY,
+    VAR_INPUTPRESSBUTTONZ,
+    VAR_INPUTPRESSBUTTONL,
+    VAR_INPUTPRESSBUTTONR,
+    VAR_INPUTPRESSSTART,
+    VAR_INPUTPRESSSELECT,
+#endif
 
     // Max variable count
     VAR_MAX_CNT
@@ -5713,21 +5734,21 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 break;
             case FUNC_DRAWSPRITE:
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
                 DrawSprite((entity->xpos >> 16) - camera[currentCamera].xScrollOffset + spriteFrame->pivotX,
                            (entity->ypos >> 16) - camera[currentCamera].yScrollOffset + spriteFrame->pivotY,
                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                 break;
             case FUNC_DRAWSPRITEXY:
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
                 DrawSprite((scriptEng.operands[1] >> 16) - camera[currentCamera].xScrollOffset + spriteFrame->pivotX,
                            (scriptEng.operands[2] >> 16) - camera[currentCamera].yScrollOffset + spriteFrame->pivotY, spriteFrame->width, spriteFrame->height,
                            spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                 break;
             case FUNC_DRAWSPRITESCREENXY:
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY, spriteFrame->width,
                            spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                 break;
@@ -5741,7 +5762,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 if (scriptEng.operands[6]) {
                     while (scriptEng.operands[4] > 0) {
                         int frameID = scriptEng.operands[3] % i / (i / 10) + scriptEng.operands[0];
-                        spriteFrame = &scriptFrames[scriptInfo->frameListOffset + frameID];
+                        spriteFrame = GetScriptFrame(scriptInfo, frameID);
                         DrawSprite(spriteFrame->pivotX + scriptEng.operands[1], spriteFrame->pivotY + scriptEng.operands[2], spriteFrame->width,
                                    spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                         scriptEng.operands[1] -= scriptEng.operands[5];
@@ -5756,7 +5777,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                     while (scriptEng.operands[4] > 0) {
                         if (extra >= i) {
                             int frameID = scriptEng.operands[3] % i / (i / 10) + scriptEng.operands[0];
-                            spriteFrame = &scriptFrames[scriptInfo->frameListOffset + frameID];
+                            spriteFrame = GetScriptFrame(scriptInfo, frameID);
                             DrawSprite(spriteFrame->pivotX + scriptEng.operands[1], spriteFrame->pivotY + scriptEng.operands[2], spriteFrame->width,
                                        spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                         }
@@ -5792,7 +5813,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
 
@@ -5816,7 +5837,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             charID++;
@@ -5845,7 +5866,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -5871,7 +5892,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -5901,7 +5922,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -5927,7 +5948,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -5957,7 +5978,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -5982,7 +6003,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -6011,7 +6032,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             scriptEng.operands[0] += 26;
@@ -6034,7 +6055,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             charID++;
@@ -6064,7 +6085,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -6089,7 +6110,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -6126,7 +6147,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 break;
             case FUNC_EDITFRAME: {
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
 
                 spriteFrame->pivotX = scriptEng.operands[1];
                 spriteFrame->pivotY = scriptEng.operands[2];
@@ -6172,7 +6193,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 break;
             case FUNC_DRAWSPRITEFX:
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
                 
                 switch (scriptEng.operands[1]) {
                     case FX_SCALE:
@@ -6277,7 +6298,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 break;
             case FUNC_DRAWSPRITESCREENFX:
                 opcodeSize  = 0;
-                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + scriptEng.operands[0]];
+                spriteFrame = GetScriptFrame(scriptInfo, scriptEng.operands[0]);
                 
                 switch (scriptEng.operands[1]) {
                     case FX_SCALE:
@@ -6444,6 +6465,9 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
             }
             case FUNC_BOXCOLLISIONTEST:
                 opcodeSize = 0;
+                if (scriptEng.operands[1] < 0 || scriptEng.operands[1] >= ENTITY_COUNT || scriptEng.operands[6] < 0
+                    || scriptEng.operands[6] >= ENTITY_COUNT)
+                    break; // invalid entity slot
                 switch (scriptEng.operands[0]) {
                     default: break;
                     case C_TOUCH:
@@ -7001,7 +7025,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 // scriptEng.operands[1] = valueID
                 // scriptEng.operands[2] = entitySlot
 
-                if (scriptEng.operands[1] < 64)
+                if (scriptEng.operands[1] >= 0 && scriptEng.operands[1] < 64 && scriptEng.operands[2] >= 0 && scriptEng.operands[2] < ENTITY_COUNT)
                     scriptEng.operands[0] = objectEntityList[scriptEng.operands[2]].values[scriptEng.operands[1]];
                 break;
             }
@@ -7012,7 +7036,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 // scriptEng.operands[2] = entitySlot
 
                 opcodeSize = 0;
-                if (scriptEng.operands[1] < 64)
+                if (scriptEng.operands[1] >= 0 && scriptEng.operands[1] < 64 && scriptEng.operands[2] >= 0 && scriptEng.operands[2] < ENTITY_COUNT)
                     objectEntityList[scriptEng.operands[2]].values[scriptEng.operands[1]] = scriptEng.operands[0];
                 break;
             }
@@ -7022,9 +7046,17 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 // scriptEng.operands[1] = srcSlot
                 // scriptEng.operands[2] = count
 
-                Entity *dstList = &objectEntityList[scriptEng.operands[0]];
-                Entity *srcList = &objectEntityList[scriptEng.operands[1]];
-                for (int i = 0; i < scriptEng.operands[2]; ++i) memcpy(&dstList[i], &srcList[i], sizeof(Entity));
+                // clamp so a bad slot/count can't copy past the entity list
+                int copyDst = scriptEng.operands[0], copySrc = scriptEng.operands[1], copyCount = scriptEng.operands[2];
+                if (copyDst < 0 || copySrc < 0 || copyDst >= ENTITY_COUNT || copySrc >= ENTITY_COUNT)
+                    break;
+                if (copyDst + copyCount > ENTITY_COUNT)
+                    copyCount = ENTITY_COUNT - copyDst;
+                if (copySrc + copyCount > ENTITY_COUNT)
+                    copyCount = ENTITY_COUNT - copySrc;
+                Entity *dstList = &objectEntityList[copyDst];
+                Entity *srcList = &objectEntityList[copySrc];
+                for (int i = 0; i < copyCount; ++i) memcpy(&dstList[i], &srcList[i], sizeof(Entity));
                 break;
             }
 #endif
@@ -7529,7 +7561,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
 						}
 						else {
 							character += scriptEng.operands[0];
-							spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+							spriteFrame = GetScriptFrame(scriptInfo, character);
 							DrawSprite(charxpos + spriteFrame->pivotX, charypos + spriteFrame->pivotY,
 									   spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
 							charxpos += spriteFrame->width + scriptEng.operands[4];
@@ -7595,7 +7627,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
 						}
 						else {
 							character += scriptEng.operands[0];
-							spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+							spriteFrame = GetScriptFrame(scriptInfo, character);
 							
 							switch (scriptEng.operands[8]) {
 								case FX_SCALE:
@@ -7699,7 +7731,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 if (scriptEng.operands[6]) {
                     while (scriptEng.operands[4] > 0) {
                         int frameID = scriptEng.operands[3] % i / (i / 10) + scriptEng.operands[0];
-                        spriteFrame = &scriptFrames[scriptInfo->frameListOffset + frameID];
+                        spriteFrame = GetScriptFrame(scriptInfo, frameID);
 
                         switch (scriptEng.operands[7]) {
                             case FX_SCALE:
@@ -7803,7 +7835,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                     while (scriptEng.operands[4] > 0) {
                         if (extra >= i) {
                             int frameID = scriptEng.operands[3] % i / (i / 10) + scriptEng.operands[0];
-                            spriteFrame = &scriptFrames[scriptInfo->frameListOffset + frameID];
+                            spriteFrame = GetScriptFrame(scriptInfo, frameID);
 
                             switch (scriptEng.operands[7]) {
                                 case FX_SCALE:
@@ -7929,7 +7961,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
 
@@ -7953,7 +7985,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             charID++;
@@ -7982,7 +8014,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 switch (scriptEng.operands[7]) {
                                 case FX_SCALE:
                                     DrawSpriteScaled(entity->direction, scriptEng.operands[1], scriptEng.operands[2], -spriteFrame->pivotX, -spriteFrame->pivotY,
@@ -8095,7 +8127,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -8125,7 +8157,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -8151,7 +8183,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 switch (scriptEng.operands[7]) {
                                 case FX_SCALE:
                                     DrawSpriteScaled(entity->direction, scriptEng.operands[1], scriptEng.operands[2], -spriteFrame->pivotX, -spriteFrame->pivotY,
@@ -8268,7 +8300,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];
@@ -8293,7 +8325,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 switch (scriptEng.operands[7]) {
                                 case FX_SCALE:
                                     DrawSpriteScaled(entity->direction, scriptEng.operands[1], scriptEng.operands[2], -spriteFrame->pivotX, -spriteFrame->pivotY,
@@ -8409,7 +8441,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             scriptEng.operands[0] += 26;
@@ -8432,7 +8464,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 wordoffset += spriteFrame->width + scriptEng.operands[6];
                             }
                             charID++;
@@ -8462,7 +8494,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 switch (scriptEng.operands[7]) {
                                 case FX_SCALE:
                                     DrawSpriteScaled(entity->direction, scriptEng.operands[1], scriptEng.operands[2], -spriteFrame->pivotX, -spriteFrame->pivotY,
@@ -8574,7 +8606,7 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                             }
                             else {
                                 character += scriptEng.operands[0];
-                                spriteFrame = &scriptFrames[scriptInfo->frameListOffset + character];
+                                spriteFrame = GetScriptFrame(scriptInfo, character);
                                 DrawSprite(scriptEng.operands[1] + spriteFrame->pivotX, scriptEng.operands[2] + spriteFrame->pivotY,
                                            spriteFrame->width, spriteFrame->height, spriteFrame->sprX, spriteFrame->sprY, scriptInfo->spriteSheetID);
                                 scriptEng.operands[1] += spriteFrame->width + scriptEng.operands[6];

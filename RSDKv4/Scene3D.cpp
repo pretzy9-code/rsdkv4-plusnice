@@ -489,7 +489,7 @@ void Draw3DScene(int spriteSheetID)
                     int ypos = SCREEN_CENTERY - projectionY * vertexBufferT[face->a].y / vertexBufferT[face->a].z;
 
                     ObjectScript *scriptInfo = &objectScriptList[vertexBuffer[face->a].u];
-                    SpriteFrame *frame       = &scriptFrames[scriptInfo->frameListOffset + vertexBuffer[face->b].u];
+                    SpriteFrame *frame       = GetScriptFrame(scriptInfo, vertexBuffer[face->b].u);
 
                     switch (vertexBuffer[face->a].v) {
                         case D_SCALE:

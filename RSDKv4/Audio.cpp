@@ -708,10 +708,16 @@ void LoadMusic(void *userdata)
 
 void SetMusicTrack(const char *filePath, byte trackID, bool loop, uint loopPoint)
 {
+    if (trackID >= TRACK_COUNT)
+        return; // out of range track ID would write past the track list
+
     LockAudioDevice();
     TrackInfo *track = &musicTracks[trackID];
     StrCopy(track->fileName, "Data/Music/");
-    StrAdd(track->fileName, filePath);
+    if (StrLength(filePath) < (int)sizeof(track->fileName) - 11) // don't overflow the file name buffer
+        StrAdd(track->fileName, filePath);
+    else
+        track->fileName[0] = 0;
     track->trackLoop = loop;
     track->loopPoint = loopPoint;
     track->endLoopPoint = 0;
@@ -720,10 +726,16 @@ void SetMusicTrack(const char *filePath, byte trackID, bool loop, uint loopPoint
 
 void SetMusicTrackEx(const char *filePath, byte trackID, bool loop, uint loopPoint, uint endLoopPoint)
 {
+    if (trackID >= TRACK_COUNT)
+        return; // out of range track ID would write past the track list
+
     LockAudioDevice();
     TrackInfo *track = &musicTracks[trackID];
     StrCopy(track->fileName, "Data/Music/");
-    StrAdd(track->fileName, filePath);
+    if (StrLength(filePath) < (int)sizeof(track->fileName) - 11) // don't overflow the file name buffer
+        StrAdd(track->fileName, filePath);
+    else
+        track->fileName[0] = 0;
     track->trackLoop = loop;
     track->loopPoint = loopPoint;
     track->endLoopPoint = endLoopPoint;
@@ -751,6 +763,9 @@ void SwapMusicTrack(const char *filePath, byte trackID, uint loopPoint, uint rat
 bool PlayMusic(int track, int musStartPos)
 {
     if (!audioEnabled)
+        return false;
+
+    if (track < 0 || track >= TRACK_COUNT)
         return false;
 
     if (musicTracks[track].fileName[0]) {
@@ -967,6 +982,9 @@ void LoadSfx(char *filePath, byte sfxID)
 }
 void PlaySfx(int sfx, bool loop)
 {
+    if (sfx < 0 || sfx >= SFX_COUNT)
+        return;
+
     LockAudioDevice();
     int sfxChannelID = -1;
 	
@@ -1007,6 +1025,9 @@ void PlaySfx(int sfx, bool loop)
 }
 void PlayVoice(int sfx, bool loop)
 {
+    if (sfx < 0 || sfx >= SFX_COUNT)
+        return;
+
     LockAudioDevice();
     int sfxChannelID = -1;
 	
