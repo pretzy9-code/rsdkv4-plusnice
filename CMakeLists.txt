@@ -13,10 +13,10 @@ option(RETRO_DISABLE_PLUS "Disables Plus. Should be set on for any public releas
 option(RETRO_ORIGINAL_CODE "Removes any change that differs from the original code, a playable game can't be built this way." OFF)
 option(RETRO_USE_STEAM "Enables Plus if Origins Plus is found via Steam API." OFF)
 
-option(RETRO_UPDATE_CHECKER "Enables or disables the update checker." OFF)
-option(RETRO_USE_CURL "Compiles with cURL." OFF) # RETRO_UPDATE_CHECKER forces this ON
+option(RETRO_UPDATE_CHECKER "Enables or disables the update checker." ON)
+option(RETRO_USE_CURL "Compiles with cURL." ON) # RETRO_UPDATE_CHECKER forces this ON
 
-option(RETRO_ACCEPT_OLD_SYNTAX "Allows compatibility with the old syntax." OFF)
+option(RETRO_ACCEPT_OLD_SYNTAX "Allows compatibility with the old syntax." ON)
 
 option(RETRO_USE_DISCORD "Adds custom Discord RPC features usable by mods." OFF)
 
