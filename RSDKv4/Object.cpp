@@ -116,12 +116,12 @@ void ProcessObjects()
             }
         }
 
-        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT) {
+        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT && entity->type < OBJECT_COUNT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             if (scriptCode[scriptInfo->eventUpdate.scriptCodePtr] > 0)
                 ProcessScript(scriptInfo->eventUpdate.scriptCodePtr, scriptInfo->eventUpdate.jumpTablePtr, EVENT_MAIN);
 
-            if (entity->drawOrder < DRAWLAYER_COUNT)
+            if (entity->drawOrder < DRAWLAYER_COUNT && entity->drawOrder >= 0)
                 drawListEntries[entity->drawOrder].entityRefs[drawListEntries[entity->drawOrder].listSize++] = objectEntityPos;
         }
     }
@@ -132,14 +132,16 @@ void ProcessObjects()
         Entity *entity = &objectEntityList[objectEntityPos];
         if (processObjectFlag[objectEntityPos] && entity->objectInteractions) {
             // Custom Group
-            if (entity->groupID >= OBJECT_COUNT) {
+            if (entity->groupID >= OBJECT_COUNT && entity->groupID < TYPEGROUP_COUNT) {
                 TypeGroupList *listCustom                      = &objectTypeGroupList[objectEntityList[objectEntityPos].groupID];
                 listCustom->entityRefs[listCustom->listSize++] = objectEntityPos;
             }
 
             // Type-Specific list
-            TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
-            listType->entityRefs[listType->listSize++] = objectEntityPos;
+            if (objectEntityList[objectEntityPos].type >= 0 && objectEntityList[objectEntityPos].type < TYPEGROUP_COUNT) {
+                TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
+                listType->entityRefs[listType->listSize++] = objectEntityPos;
+            }
 
             // All Entities list
             TypeGroupList *listAll                   = &objectTypeGroupList[GROUP_ALL];
@@ -154,7 +156,7 @@ void ProcessPausedObjects()
     for (objectEntityPos = 0; objectEntityPos < ENTITY_COUNT; ++objectEntityPos) {
         Entity *entity = &objectEntityList[objectEntityPos];
 
-        if (entity->priority == PRIORITY_ALWAYS && entity->type > OBJ_TYPE_BLANKOBJECT) {
+        if (entity->priority == PRIORITY_ALWAYS && entity->type > OBJ_TYPE_BLANKOBJECT && entity->type < OBJECT_COUNT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             if (scriptCode[scriptInfo->eventUpdate.scriptCodePtr] > 0)
                 ProcessScript(scriptInfo->eventUpdate.scriptCodePtr, scriptInfo->eventUpdate.jumpTablePtr, EVENT_MAIN);
@@ -212,7 +214,7 @@ void ProcessFrozenObjects()
             }
         }
 
-        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT) {
+        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT && entity->type < OBJECT_COUNT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             if (scriptCode[scriptInfo->eventUpdate.scriptCodePtr] > 0 && entity->priority == PRIORITY_ALWAYS)
                 ProcessScript(scriptInfo->eventUpdate.scriptCodePtr, scriptInfo->eventUpdate.jumpTablePtr, EVENT_MAIN);
@@ -228,13 +230,15 @@ void ProcessFrozenObjects()
         Entity *entity = &objectEntityList[objectEntityPos];
         if (processObjectFlag[objectEntityPos] && entity->objectInteractions) {
             // Custom Group
-            if (entity->groupID >= OBJECT_COUNT) {
+            if (entity->groupID >= OBJECT_COUNT && entity->groupID < TYPEGROUP_COUNT) {
                 TypeGroupList *listCustom                      = &objectTypeGroupList[objectEntityList[objectEntityPos].groupID];
                 listCustom->entityRefs[listCustom->listSize++] = objectEntityPos;
             }
             // Type-Specific list
-            TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
-            listType->entityRefs[listType->listSize++] = objectEntityPos;
+            if (objectEntityList[objectEntityPos].type >= 0 && objectEntityList[objectEntityPos].type < TYPEGROUP_COUNT) {
+                TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
+                listType->entityRefs[listType->listSize++] = objectEntityPos;
+            }
 
             // All Entities list
             TypeGroupList *listAll                   = &objectTypeGroupList[GROUP_ALL];
@@ -312,7 +316,7 @@ void Process2PObjects()
             default: break;
         }
 
-        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT) {
+        if (processObjectFlag[objectEntityPos] && entity->type > OBJ_TYPE_BLANKOBJECT && entity->type < OBJECT_COUNT) {
             ObjectScript *scriptInfo = &objectScriptList[entity->type];
             if (scriptCode[scriptInfo->eventUpdate.scriptCodePtr] > 0)
                 ProcessScript(scriptInfo->eventUpdate.scriptCodePtr, scriptInfo->eventUpdate.jumpTablePtr, EVENT_MAIN);
@@ -328,13 +332,15 @@ void Process2PObjects()
         Entity *entity = &objectEntityList[objectEntityPos];
         if (processObjectFlag[objectEntityPos] && entity->objectInteractions) {
             // Custom Group
-            if (entity->groupID >= OBJECT_COUNT) {
+            if (entity->groupID >= OBJECT_COUNT && entity->groupID < TYPEGROUP_COUNT) {
                 TypeGroupList *listCustom                      = &objectTypeGroupList[objectEntityList[objectEntityPos].groupID];
                 listCustom->entityRefs[listCustom->listSize++] = objectEntityPos;
             }
             // Type-Specific list
-            TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
-            listType->entityRefs[listType->listSize++] = objectEntityPos;
+            if (objectEntityList[objectEntityPos].type >= 0 && objectEntityList[objectEntityPos].type < TYPEGROUP_COUNT) {
+                TypeGroupList *listType                    = &objectTypeGroupList[objectEntityList[objectEntityPos].type];
+                listType->entityRefs[listType->listSize++] = objectEntityPos;
+            }
 
             // All Entities list
             TypeGroupList *listAll                   = &objectTypeGroupList[GROUP_ALL];

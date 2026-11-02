@@ -133,28 +133,28 @@ bool ReadSaveRAMData()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sSData.bin", getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sSData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sSData.bin", getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sSData.bin", gamePath, savePath);
 #endif
 #endif
 
@@ -163,28 +163,28 @@ bool ReadSaveRAMData()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSGame.bin", getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSGame.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSGame.bin", getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", gamePath, savePath);
 #endif
 #endif
 
@@ -206,28 +206,28 @@ bool WriteSaveRAMData()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSData.bin", getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSData.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSData.bin", getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSData.bin", getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSData.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSData.bin", gamePath, savePath);
 #endif
 #endif
     }
@@ -235,28 +235,28 @@ bool WriteSaveRAMData()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(buffer, "%s/%sSGame.bin", getResourcesPath(), savePath);
+            snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", getResourcesPath(), savePath);
         else
-            sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
+            snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(buffer, "%s/%sSGame.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-        sprintf(buffer, "%s/%sSGame.bin", getDocumentsPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sSGame.bin", getDocumentsPath(), savePath);
 #else
-        sprintf(buffer, "%s%sSGame.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sSGame.bin", gamePath, savePath);
 #endif
 #endif
     }
@@ -313,13 +313,13 @@ void InitUserdata()
     char inputBuffer[0x20];
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/settings.ini", getResourcesPath());
+        snprintf(buffer, sizeof(buffer), "%s/settings.ini", getResourcesPath());
     else
-        sprintf(buffer, "%ssettings.ini", gamePath);
+        snprintf(buffer, sizeof(buffer), "%ssettings.ini", gamePath);
 #elif RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_ANDROID
-    sprintf(buffer, "%s/settings.ini", gamePath);
+    snprintf(buffer, sizeof(buffer), "%s/settings.ini", gamePath);
 #else
-    sprintf(buffer, BASE_PATH "settings.ini");
+    snprintf(buffer, sizeof(buffer), BASE_PATH "settings.ini");
 #endif
 
     // if on android make a ".nomedia" file to prevent media scanning
@@ -903,13 +903,13 @@ void InitUserdata()
     // Support for extra controller types SDL doesn't recognise
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/controllerdb.txt", getResourcesPath());
+        snprintf(buffer, sizeof(buffer), "%s/controllerdb.txt", getResourcesPath());
     else
-        sprintf(buffer, "%scontrollerdb.txt", gamePath);
+        snprintf(buffer, sizeof(buffer), "%scontrollerdb.txt", gamePath);
 #elif RETRO_PLATFORM == RETRO_OSX || RETRO_PLATFORM == RETRO_ANDROID
-    sprintf(buffer, "%s/controllerdb.txt", gamePath);
+    snprintf(buffer, sizeof(buffer), "%s/controllerdb.txt", gamePath);
 #else
-    sprintf(buffer, BASE_PATH "controllerdb.txt");
+    snprintf(buffer, sizeof(buffer), BASE_PATH "controllerdb.txt");
 #endif
     file = fOpen(buffer, "rb");
     if (file) {
@@ -923,13 +923,13 @@ void InitUserdata()
 
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/UData.bin", getResourcesPath());
+        snprintf(buffer, sizeof(buffer), "%s/UData.bin", getResourcesPath());
     else
-        sprintf(buffer, "%sUData.bin", gamePath);
+        snprintf(buffer, sizeof(buffer), "%sUData.bin", gamePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/UData.bin", gamePath);
+    snprintf(buffer, sizeof(buffer), "%s/UData.bin", gamePath);
 #else
-    sprintf(buffer, "%sUData.bin", gamePath);
+    snprintf(buffer, sizeof(buffer), "%sUData.bin", gamePath);
 #endif
     file = fOpen(buffer, "rb");
     if (file) {
@@ -1125,13 +1125,13 @@ void WriteSettings()
 
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/settings.ini", getResourcesPath());
+        snprintf(buffer, sizeof(buffer), "%s/settings.ini", getResourcesPath());
     else
-        sprintf(buffer, "%ssettings.ini", gamePath);
+        snprintf(buffer, sizeof(buffer), "%ssettings.ini", gamePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/settings.ini", gamePath);
+    snprintf(buffer, sizeof(buffer), "%s/settings.ini", gamePath);
 #else
-    sprintf(buffer, "%ssettings.ini", gamePath);
+    snprintf(buffer, sizeof(buffer), "%ssettings.ini", gamePath);
 #endif
 
     ini.Write(buffer, false);
@@ -1143,28 +1143,28 @@ void ReadUserdata()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sUData.bin", redirecunusedtSave ? modsPath : getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sUData.bin", getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sUData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sUData.bin", getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sUData.bin", gamePath, savePath);
 #endif
 #endif
     FileIO *userFile = fOpen(buffer, "rb");
@@ -1201,28 +1201,28 @@ void WriteUserdata()
 #if RETRO_USE_MOD_LOADER
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", redirectSave ? modsPath : getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sUData.bin", redirectSave ? modsPath : gamePath, savePath);
 #endif
 #else
 #if RETRO_PLATFORM == RETRO_UWP
     if (!usingCWD)
-        sprintf(buffer, "%s/%sUData.bin", getResourcesPath(), savePath);
+        snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", getResourcesPath(), savePath);
     else
-        sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
+        snprintf(buffer, sizeof(buffer), "%s%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_OSX
-    sprintf(buffer, "%s/%sUData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", gamePath, savePath);
 #elif RETRO_PLATFORM == RETRO_iOS
-    sprintf(buffer, "%s/%sUData.bin", getDocumentsPath(), savePath);
+    snprintf(buffer, sizeof(buffer), "%s/%sUData.bin", getDocumentsPath(), savePath);
 #else
-    sprintf(buffer, "%s%sUData.bin", gamePath, savePath);
+    snprintf(buffer, sizeof(buffer), "%s%sUData.bin", gamePath, savePath);
 #endif
 #endif
 
