@@ -33,10 +33,10 @@ bool CheckRSDKFile(const char *filePath)
     char filePathBuffer[0x100];
 #if RETRO_PLATFORM == RETRO_OSX
     char pathBuf[0x100];
-    sprintf(pathBuf, "%s/%s", gamePath, filePath);
-    sprintf(filePathBuffer, "%s", pathBuf);
+    snprintf(pathBuf, sizeof(pathBuf), "%s/%s", gamePath, filePath);
+    snprintf(filePathBuffer, sizeof(filePathBuffer), "%s", pathBuf);
 #else
-    sprintf(filePathBuffer, "%s", filePath);
+    snprintf(filePathBuffer, sizeof(filePathBuffer), "%s", filePath);
 #endif
 
     cFileHandle = fOpen(filePathBuffer, "rb");
@@ -194,8 +194,8 @@ bool LoadFile(const char *filePath, FileInfo *fileInfo)
     if (true) {
 #endif
         char pathBuf[0x100];
-        sprintf(pathBuf, "%s/%s", gamePath, filePathBuf);
-        sprintf(filePathBuf, "%s", pathBuf);
+        snprintf(pathBuf, sizeof(pathBuf), "%s/%s", gamePath, filePathBuf);
+        snprintf(filePathBuf, sizeof(filePathBuf), "%s", pathBuf);
     }
 #endif
 

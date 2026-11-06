@@ -70,6 +70,8 @@ inline void SetActivePalette(byte newActivePal, int startLine, int endLine)
 inline void SetPaletteEntry(byte paletteIndex, byte index, byte r, byte g, byte b)
 {
     if (paletteIndex != 0xFF) {
+        if (paletteIndex >= PALETTE_COUNT)
+            return; // invalid palette, would write out of bounds
         fullPalette[paletteIndex][index]     = PACK_RGB888(r, g, b);
         fullPalette32[paletteIndex][index].r = r;
         fullPalette32[paletteIndex][index].g = g;
@@ -85,6 +87,9 @@ inline void SetPaletteEntry(byte paletteIndex, byte index, byte r, byte g, byte 
 
 inline void SetPaletteEntryPacked(byte paletteIndex, byte index, uint color)
 {
+    if (paletteIndex >= PALETTE_COUNT)
+        return; // invalid palette, would write out of bounds
+
     fullPalette[paletteIndex][index] = PACK_RGB888((byte)(color >> 16), (byte)(color >> 8), (byte)(color >> 0));
 
     fullPalette32[paletteIndex][index].r = (byte)(color >> 16);
@@ -94,6 +99,9 @@ inline void SetPaletteEntryPacked(byte paletteIndex, byte index, uint color)
 
 inline uint GetPaletteEntryPacked(byte paletteIndex, byte index)
 {
+    if (paletteIndex >= PALETTE_COUNT)
+        return 0; // invalid palette, would read out of bounds
+
     PaletteEntry clr = fullPalette32[paletteIndex][index];
     return (clr.r << 16) | (clr.g << 8) | (clr.b);
 }
@@ -102,6 +110,9 @@ inline void CopyPalette(byte sourcePalette, byte srcPaletteStart, byte destinati
 {
     if (sourcePalette < PALETTE_COUNT && destinationPalette < PALETTE_COUNT) {
         for (int i = 0; i < count; ++i) {
+            // don't run past the end of either palette
+            if (destPaletteStart + i >= PALETTE_COLOR_COUNT || srcPaletteStart + i >= PALETTE_COLOR_COUNT)
+                break;
             fullPalette[destinationPalette][destPaletteStart + i]   = fullPalette[sourcePalette][srcPaletteStart + i];
             fullPalette32[destinationPalette][destPaletteStart + i] = fullPalette32[sourcePalette][srcPaletteStart + i];
         }
@@ -110,6 +121,9 @@ inline void CopyPalette(byte sourcePalette, byte srcPaletteStart, byte destinati
 
 inline void RotatePalette(int palID, byte startIndex, byte endIndex, bool right)
 {
+    if (palID < 0 || palID >= PALETTE_COUNT)
+        return; // invalid palette
+
     if (right) {
         ushort startClr         = fullPalette[palID][endIndex];
         PaletteEntry startClr32 = fullPalette32[palID][endIndex];

@@ -9,33 +9,37 @@ void PrintLog(const char *msg, ...)
 {
 #ifndef RETRO_DISABLE_LOG
     if (engineDebugMode || Engine.consoleEnabled) {
-        char buffer[0x100];
+        char buffer[0x400];
 
-        // make the full string
+        // make the full string (bounded: long messages used to overflow the buffer)
         va_list args;
         va_start(args, msg);
-        vsprintf(buffer, msg, args);
+        vsnprintf(buffer, sizeof(buffer), msg, args);
+        va_end(args);
         if (endLine) {
             printf("%s\n", buffer);
-            sprintf(buffer, "%s\n", buffer);
+            size_t len = strlen(buffer); // append the newline in place (the old code used sprintf with the same buffer as source and destination)
+            if (len < sizeof(buffer) - 1) {
+                buffer[len]     = '\n';
+                buffer[len + 1] = 0;
+            }
         }
         else {
             printf("%s", buffer);
-            sprintf(buffer, "%s", buffer);
         }
 
         if (engineDebugMode) {
-            char pathBuffer[0x100];
+            char pathBuffer[0x200];
 #if RETRO_PLATFORM == RETRO_UWP
             if (!usingCWD)
-                sprintf(pathBuffer, "%s/log.txt", getResourcesPath());
+                snprintf(pathBuffer, sizeof(pathBuffer), "%s/log.txt", getResourcesPath());
             else
-                sprintf(pathBuffer, "log.txt");
+                snprintf(pathBuffer, sizeof(pathBuffer), "log.txt");
 #elif RETRO_PLATFORM == RETRO_ANDROID
-            sprintf(pathBuffer, "%s/log.txt", gamePath);
+            snprintf(pathBuffer, sizeof(pathBuffer), "%s/log.txt", gamePath);
             __android_log_print(ANDROID_LOG_INFO, "RSDKv4", "%s", buffer);
 #else
-            sprintf(pathBuffer, BASE_PATH "log.txt");
+            snprintf(pathBuffer, sizeof(pathBuffer), BASE_PATH "log.txt");
 #endif
             FileIO *file = fOpen(pathBuffer, "a");
             if (file) {

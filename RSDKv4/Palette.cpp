@@ -68,6 +68,10 @@ void SetLimitedFade(byte paletteID, byte R, byte G, byte B, ushort blendAmount, 
     if (blendAmount >= 0x100)
         blendAmount = 0xFF;
 
+    if (startIndex < 0)
+        startIndex = 0;
+    if (endIndex > PALETTE_COLOR_COUNT)
+        endIndex = PALETTE_COLOR_COUNT;
     if (startIndex >= endIndex)
         return;
 
@@ -91,6 +95,10 @@ void SetPaletteFade(byte destPaletteID, byte srcPaletteA, byte srcPaletteB, usho
     if (blendAmount >= 0x100)
         blendAmount = 0xFF;
 
+    if (startIndex < 0)
+        startIndex = 0;
+    if (endIndex > PALETTE_COLOR_COUNT - 1) // end index is inclusive here
+        endIndex = PALETTE_COLOR_COUNT - 1;
     if (startIndex >= endIndex)
         return;
 

@@ -22,22 +22,22 @@ IniParser::IniParser(const char *filename, bool addPath)
     char key[0x100];
     char value[0x100];
 
-    char pathBuffer[0x80];
+    char pathBuffer[0x200];
 
     if (addPath) {
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(pathBuffer, "%s/%s", getResourcesPath(), filename);
+            snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", getResourcesPath(), filename);
         else
-            sprintf(pathBuffer, "%s", filename);
+            snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(pathBuffer, "%s/%s", gamePath, filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", gamePath, filename);
 #else
-        sprintf(pathBuffer, "%s", filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
 #endif
     }
     else {
-        sprintf(pathBuffer, "%s", filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
     }
 
     FileIO *f;
@@ -59,6 +59,20 @@ IniParser::IniParser(const char *filename, bool addPath)
             }
             if (buf[strLen - 1] == '\n')
                 break;
+            if (strLen >= (int)sizeof(buf) - 1) {
+                // line is longer than the buffer: skip the rest of it instead of overflowing
+                byte skip = 0;
+                while (true) {
+                    ret = (int)fRead(&skip, sizeof(byte), 1, f);
+                    if (ret == 0) {
+                        flag = true;
+                        break;
+                    }
+                    if (skip == '\n')
+                        break;
+                }
+                break;
+            }
         }
         buf[strLen] = 0;
         if (buf[0] == '#')
@@ -71,12 +85,12 @@ IniParser::IniParser(const char *filename, bool addPath)
                  || sscanf(buf, "%[^;=] = %[^\t\r\n]", key, value) == 2 || sscanf(buf, "%[^;=] =%[^\t\r\n]", key, value) == 2) {
             ConfigItem item;
             if (hasSection)
-                sprintf(item.section, "%s", section);
+                snprintf(item.section, sizeof(item.section), "%s", section);
             else
                 sprintf(item.section, "");
 
-            sprintf(item.key, "%s", key);
-            sprintf(item.value, "%s", value);
+            snprintf(item.key, sizeof(item.key), "%s", key);
+            snprintf(item.value, sizeof(item.value), "%s", value);
             item.hasSection = hasSection;
             items.push_back(item);
         }
@@ -265,22 +279,22 @@ int IniParser::SetComment(const char *section, const char *key, const char *comm
 
 void IniParser::Write(const char *filename, bool addPath)
 {
-    char pathBuffer[0x80];
+    char pathBuffer[0x200];
 
     if (addPath) {
 #if RETRO_PLATFORM == RETRO_UWP
         if (!usingCWD)
-            sprintf(pathBuffer, "%s/%s", getResourcesPath(), filename);
+            snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", getResourcesPath(), filename);
         else
-            sprintf(pathBuffer, "%s", filename);
+            snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
 #elif RETRO_PLATFORM == RETRO_OSX
-        sprintf(pathBuffer, "%s/%s", gamePath, filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", gamePath, filename);
 #else
-        sprintf(pathBuffer, "%s", filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
 #endif
     }
     else {
-        sprintf(pathBuffer, "%s", filename);
+        snprintf(pathBuffer, sizeof(pathBuffer), "%s", filename);
     }
 
     FileIO *f;

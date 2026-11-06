@@ -405,6 +405,34 @@ void RetroEngine::Init()
     Engine.usingDataFile = false;
     Engine.usingBytecode = false;
 
+    // Print what this build was compiled with, so logs are easier to debug
+    PrintLog("Build config: revision %d, old syntax %s, update checker %s, mod loader %s, plus %s, vanilla-like %s", RSDK_REVISION,
+#if RETRO_ACCEPT_OLD_SYNTAX
+             "on",
+#else
+             "off",
+#endif
+#if RETRO_CHECKUPDATE
+             "on",
+#else
+             "off",
+#endif
+#if RETRO_USE_MOD_LOADER
+             "on",
+#else
+             "off",
+#endif
+#if RSDK_AUTOBUILD
+             "disabled",
+#else
+             "enabled",
+#endif
+#if RETRO_VANILLA_LIKE
+             "on");
+#else
+             "off");
+#endif
+
 #if !RETRO_USE_ORIGINAL_CODE
     InitUserdata();
 #if RETRO_USE_MOD_LOADER

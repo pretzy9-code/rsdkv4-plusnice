@@ -26,17 +26,38 @@ unsigned int playtimeSeconds = 0;
 #endif
 
 #define SCRIPT_VAR_COUNT (COMMON_SCRIPT_VAR_COUNT + 0x1DF)
-// Returns a blank frame when a script asks for a sprite frame outside of its own frame list.
-// Previously this read frames belonging to other objects (or garbage), which showed up as sprites randomly popping up.
+// When enabled (settings.ini -> [Dev] StrictSpriteFrames=true), asking for a sprite frame past the end of an object's own frame list draws nothing.
+// When disabled (default) the original behaviour is kept, so nothing that used to draw can vanish. Either way a warning is logged once per object/frame.
+bool strictSpriteFrames = false;
+
 SpriteFrame *GetScriptFrame(ObjectScript *info, int frame)
 {
     static SpriteFrame emptyFrame;
-    if (frame < 0 || frame >= info->frameCount || info->frameListOffset + frame >= SPRITEFRAME_COUNT) {
-        static int warnCount = 0;
-        if (warnCount < 64) { // don't flood the log
-            PrintLog("WARNING: Object script requested sprite frame %d, but it only has %d frame(s)", frame, info->frameCount);
-            ++warnCount;
+
+    bool outsideOwn = frame < 0 || frame >= info->frameCount;
+    bool outsideAll = frame < 0 || info->frameListOffset + frame >= SPRITEFRAME_COUNT; // would read outside the frame buffer
+
+    if (outsideOwn) {
+        // log each object/frame pair only once (up to 64 pairs) so the log stays readable
+        static int seen[64];
+        static int seenCount = 0;
+        int objectID         = (int)(info - objectScriptList);
+        int key              = (objectID << 16) ^ (frame & 0xFFFF);
+        bool known           = false;
+        for (int i = 0; i < seenCount; ++i) {
+            if (seen[i] == key) {
+                known = true;
+                break;
+            }
         }
+        if (!known && seenCount < 64) {
+            seen[seenCount++] = key;
+            PrintLog("WARNING: Object type %d requested sprite frame %d, but it only has %d frame(s)%s", objectID, frame, info->frameCount,
+                     strictSpriteFrames || outsideAll ? " (not drawn)" : "");
+        }
+    }
+
+    if (outsideAll || (outsideOwn && strictSpriteFrames)) {
         memset(&emptyFrame, 0, sizeof(emptyFrame));
         return &emptyFrame;
     }
@@ -3932,6 +3953,7 @@ void ParseScriptFile(char *scriptName, int scriptID)
                                 ConvertFunctionText(scriptText);
                                 if (Engine.gameMode == ENGINE_SCRIPTERROR) {
                                     AddTextMenuEntry(&gameMenu[0], " ");
+                                    PrintLog("SCRIPT ERROR: in \"%s\" on line %d: %s", scriptName, lineID, scriptText);
                                     AddTextMenuEntry(&gameMenu[0], "ERROR IN");
                                     AddTextMenuEntry(&gameMenu[0], scriptName);
                                     parseMode = PARSEMODE_ERROR;
@@ -5490,7 +5512,12 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
             case FUNC_AND: scriptEng.operands[0] &= scriptEng.operands[1]; break;
             case FUNC_OR: scriptEng.operands[0] |= scriptEng.operands[1]; break;
             case FUNC_XOR: scriptEng.operands[0] ^= scriptEng.operands[1]; break;
-            case FUNC_MOD: scriptEng.operands[0] %= scriptEng.operands[1]; break;
+            case FUNC_MOD:
+                if (scriptEng.operands[1] == 0) // modulo by zero would crash the engine
+                    scriptEng.operands[0] = 0;
+                else
+                    scriptEng.operands[0] %= scriptEng.operands[1];
+                break;
             case FUNC_FLIPSIGN: scriptEng.operands[0] = -scriptEng.operands[0]; break;
             case FUNC_CHECKEQUAL:
                 scriptEng.checkResult = scriptEng.operands[0] == scriptEng.operands[1];
@@ -5693,7 +5720,12 @@ void ProcessScript(int scriptCodeStart, int jumpTableStart, byte scriptEvent)
                 opcodeSize = 0;
                 --jumpTableStackPos;
                 break;
-            case FUNC_RAND: scriptEng.operands[0] = rand() % scriptEng.operands[1]; break;
+            case FUNC_RAND:
+                if (scriptEng.operands[1] <= 0) // rand() % 0 would crash the engine
+                    scriptEng.operands[0] = 0;
+                else
+                    scriptEng.operands[0] = rand() % scriptEng.operands[1];
+                break;
             case FUNC_SIN: {
                 scriptEng.operands[0] = Sin512(scriptEng.operands[1]);
                 break;

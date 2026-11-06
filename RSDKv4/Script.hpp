@@ -58,6 +58,7 @@ enum ScriptSubs { EVENT_MAIN = 0, EVENT_DRAW = 1, EVENT_SETUP = 2 };
 extern ObjectScript objectScriptList[OBJECT_COUNT];
 struct SpriteFrame;
 SpriteFrame *GetScriptFrame(ObjectScript *info, int frame);
+extern bool strictSpriteFrames;
 extern ScriptFunction scriptFunctionList[FUNCTION_COUNT];
 
 extern int scriptCode[SCRIPTCODE_COUNT];

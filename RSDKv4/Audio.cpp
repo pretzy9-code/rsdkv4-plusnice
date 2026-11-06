@@ -774,6 +774,7 @@ bool PlayMusic(int track, int musStartPos)
             if (track < 0 || track >= TRACK_COUNT) {
                 StopMusic(true);
                 currentMusicTrack = -1;
+                UnlockAudioDevice();
                 return false;
             }
             musicStartPos     = musStartPos;
@@ -1282,8 +1283,10 @@ void SetMusicMuffle(int effect, float volumeMultiplier)
     if (newEffect > ACCUMULATION_BUFFER_SIZE)
         newEffect = ACCUMULATION_BUFFER_SIZE;
 
-    if (newEffect == mUnderwaterEffect)
+    if (newEffect == mUnderwaterEffect) {
+        UnlockAudioDevice(); // was returning while still locked, which could stall the audio thread
         return;
+    }
 
     if (newEffect <= 0) {
         // Effect gets switched off, nothing to do
