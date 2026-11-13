@@ -21,10 +21,12 @@ android {
         versionCode 1
         versionName "1.3.3"
         if(project.hasProperty("RETRO_DISABLE_PLUS"))
+            autobuildFlag = false
+        if(project.hasProperty("RETRO_ACCEPT_OLD_SYNTAX"))
             autobuildFlag = true
         externalNativeBuild {
             cmake {
-                arguments "-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android", "-DRETRO_DISABLE_PLUS=$autobuildFlag"
+                arguments "-DAPP_PLATFORM=android-16", "-DANDROID_STL=c++_static", "-DPLATFORM=Android", "-DRETRO_DISABLE_PLUS=$autobuildFlag", "-DRETRO_ACCEPT_OLD_SYNTAX=$autobuildFlag"
                 abiFilters 'armeabi-v7a', 'arm64-v8a'
             }
         }
